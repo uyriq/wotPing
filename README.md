@@ -57,6 +57,11 @@ EU_2: login2.worldofwarships.eu
 
 ## Usage
 
+Go to the file wotPing.ps1
+Click it to view the contents within the GitHub UI.
+In the top right, right click the Raw button.
+Save as... somewhere you like, with the .ps1 extension.
+
 Run the script in PowerShell:
 
 ```powershell
