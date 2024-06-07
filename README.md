@@ -55,6 +55,22 @@ World of Warships	EU_1: login1.worldofwarships.eu
 EU_2: login2.worldofwarships.eu
 ```
 
+## Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+- You have installed PowerShell version 5.1 or later. You can check your PowerShell version by running the following command in your PowerShell terminal:
+
+```powershell
+$PSVersionTable.PSVersion
+```
+
+Script execution policy should be enabled. If the execution policy is not set to RemoteSigned or Unrestricted, you can change it using the Set-ExecutionPolicy cmdlet. Note that you may need to run this command as an administrator:
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
 ## Usage
 
 Go to the file wotPing.ps1
@@ -66,6 +82,32 @@ Run the script in PowerShell:
 
 ```powershell
 .\wotPing.ps1
+```
+
+feel free to add or remove servers from the list. for doing so, you can edit the `$serverList` variable in the script.
+
+```powershell
+
+$serverList = @{
+    # feel free to comment/uncomment/change this list
+    # "Yandex"     = "ya.ru";
+    "LESTA_RU-1" = "login.p1.tanki.su"
+    "LESTA_RU-2" = "login.p2.tanki.su"
+    "LESTA_RU-4" = "login.p4.tanki.su"
+    "LESTA_RU-6" = "login.p6.tanki.su"
+    "LESTA_RU-7" = "login.p7.tanki.su"
+    "LESTA_RU-8" = "login.p8.tanki.su"
+    "LESTA_RU-9" = "login.p9.tanki.su"
+    "WOT_EU_1"       = "login.p1.worldoftanks.eu"
+    "WOT_EU_2"       = "login.p2.worldoftanks.eu"
+    "WOT_EU_3"       = "login.p3.worldoftanks.eu"
+    "WOT_EU_4"       = "login.p4.worldoftanks.eu"
+    "WOT_Blitz_EU_1" = "login0.wotblitz.eu"
+    "WOT_Blitz_EU_2" = "login1.wotblitz.eu"
+    "WOT_Blitz_EU_3" = "login2.wotblitz.eu"
+    "WOT_Blitz_EU_4" = "login3.wotblitz.eu"
+    "WOT_Blitz_EU_5" = "login4.wotblitz.eu"
+}
 ```
 
 LICENCE MIT
