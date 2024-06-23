@@ -19,6 +19,11 @@
     Author: Uyriq
     Date: June 2024
 #>
+
+param(
+    [int]$pingCount = 4
+)
+
 #requires -Version 5.1
 
 # The host records are defined below.
@@ -80,10 +85,10 @@ foreach ($server in $serverList.GetEnumerator()) {
         Write-Host $ip -NoNewline 
         # check if PSVersionTable.PSVersion is 7 or higher
         if ($PSVersionTable.PSVersion.Major -ge 7) {
-            $pingResult = Test-Connection -ComputerName $ip -Count 4 -IPv4  
+            $pingResult = Test-Connection -ComputerName $ip -Count $pingCount -IPv4  
         }
         else {
-            $pingResult = Test-Connection -ComputerName $ip -Count 4  
+            $pingResult = Test-Connection -ComputerName $ip -Count $pingCount   
         }
 
 
