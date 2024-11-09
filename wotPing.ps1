@@ -1,39 +1,60 @@
-param(
-    [int]$pingCount = 4,
-    [string[]]$serverList,
-    [string]$serverListFile
-)
-
 <#
 .SYNOPSIS
     Executes ping tests on a set of servers and presents the results in a tabular format.
 
 .DESCRIPTION
-    The script accepts a list of server urls either directly through the `-serverList` parameter or via a JSON file specified with the `-serverListFile` parameter. It performs ping tests on each server, calculates the average response time and dispersion, and identifies the optimal server based on these metrics.
+    The script accepts a list of server URLs either directly through the `-serverList` parameter or via a JSON file specified with the `-serverListFile` parameter. It performs ping tests on each server, calculates the average response time and dispersion, and identifies the optimal server based on these metrics.
 
 .PARAMETER pingCount
     Specifies how many times to perform the ping test. Defaults to 4 if not provided.
 
 .PARAMETER serverList
-    Specifies a list of server addresses to ping. Each server's name is automatically assigned to be the same as its url.
+    Specifies a list of server URLs to ping. Each server's name is automatically assigned to be the same as its URL.
 
 .PARAMETER serverListFile
     Specifies a JSON file containing a list of servers to ping. The JSON should include `name` and `url` for each server.
 
+.PARAMETER Help
+    Displays this help message.
+
 .EXAMPLE
     .\wotPing.ps1 -pingCount 5 -serverList "ya.ru", "google.com" -serverListFile "serverList.json"
-    # This command pings "ya.ru", "google.com", and all servers listed in "serverList.json" five times each.
+    # Pings "ya.ru", "google.com", and all servers listed in "serverList.json" five times each.
+
+.EXAMPLE
+    .\wotPing.ps1 -serverList "example.com"
+    # Pings "example.com" four times (default ping count).
+
+.EXAMPLE
+    .\wotPing.ps1 -serverListFile "serverList.json"
+    # Pings all servers listed in "serverList.json" four times each (default ping count).
 
 .NOTES
     Author: Uyriq
-    Date: June 2024
+    Date: June 2024, Dec 2024
 #>
-
 param(
-    [int]$pingCount = 4
+    [switch]$Help,
+    [int]$pingCount = 4,
+    [string[]]$serverList,
+    [string]$serverListFile
 )
 
-#requires -Version 5.1
+# Display help and exit if -Help is provided
+if ($Help) {
+    Get-Help -Full $PSCommandPath
+    exit
+}
+
+# Check if neither serverList nor serverListFile is provided
+if (-not $serverList -and -not $serverListFile) {
+    $userInput = Read-Host "WotPing: Check examples with -Help, please provide at least one server URL (comma separated)"
+    if ([string]::IsNullOrWhiteSpace($userInput)) {
+        Write-Error "No server URLs provided. Exiting."
+        exit 1
+    }
+    $serverList = $userInput -split ',' | ForEach-Object { $_.Trim() }
+}
 
 # Initialize the server list hashtable
 $serverListHash = @{}
