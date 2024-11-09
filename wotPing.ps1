@@ -1,19 +1,28 @@
+param(
+    [int]$pingCount = 4,
+    [string[]]$serverList,
+    [string]$serverListFile
+)
+
 <#
 .SYNOPSIS
-    This script executes a ping test on a set of cluster host records and presents the results in a tabular format. It is compatible with PowerShell version 5.1 and above.
+    Executes ping tests on a set of servers and presents the results in a tabular format.
 
 .DESCRIPTION
-    The script establishes a list of DNS records and conducts a ping test on each one. It excludes IPv6 addresses and computes the average response time for each successful ping. The results are then organized in a table and sorted by the average response time. The server information used in this script is sourced from:
+    The script accepts a list of server urls either directly through the `-serverList` parameter or via a JSON file specified with the `-serverListFile` parameter. It performs ping tests on each server, calculates the average response time and dispersion, and identifies the optimal server based on these metrics.
 
-    - [Lesta.ru wiki](https://wiki.lesta.ru/ru/%D0%98%D0%B3%D1%80%D0%BE%D0%B2%D1%8B%D0%B5_%D0%BA%D0%BB%D0%B0%D1%81%D1%82%D0%B5%D1%80%D1%8B)
-    - [Wargaming.net](https://na.wargaming.net/support/en/products/wot/article/10252/)
+.PARAMETER pingCount
+    Specifies how many times to perform the ping test. Defaults to 4 if not provided.
 
-.PARAMETER None
-    This script does not require any parameters.
+.PARAMETER serverList
+    Specifies a list of server addresses to ping. Each server's name is automatically assigned to be the same as its url.
+
+.PARAMETER serverListFile
+    Specifies a JSON file containing a list of servers to ping. The JSON should include `name` and `url` for each server.
 
 .EXAMPLE
-    .\wotPing.ps1
-    # This command runs the script and executes a ping test on the predefined host records.
+    .\wotPing.ps1 -pingCount 5 -serverList "ya.ru", "google.com" -serverListFile "serverList.json"
+    # This command pings "ya.ru", "google.com", and all servers listed in "serverList.json" five times each.
 
 .NOTES
     Author: Uyriq
@@ -21,28 +30,64 @@
 #>
 #requires -Version 5.1
 
-# The host records are defined below.
-$serverList = @{
-    # feel free to comment/uncomment/change this list
-    "Yandex"     = "ya.ru";
-    "LESTA_RU-1" = "login.p1.tanki.su"
-    "LESTA_RU-2" = "login.p2.tanki.su"	
-    "LESTA_RU-4" = "login.p4.tanki.su"
-    "LESTA_RU-6" = "login.p6.tanki.su"
-    "LESTA_RU-7" = "login.p7.tanki.su"
-    "LESTA_RU-8" = "login.p8.tanki.su"
-    "LESTA_RU-9" = "login.p9.tanki.su"
-    # "WOT_EU_1"       = "login.p1.worldoftanks.eu"
-    # "WOT_EU_2"       = "login.p2.worldoftanks.eu"
-    # "WOT_EU_3"       = "login.p3.worldoftanks.eu"
-    # "WOT_EU_4"       = "login.p4.worldoftanks.eu"
-    # "WOT_Blitz_EU_1" = "login0.wotblitz.eu"
-    # "WOT_Blitz_EU_2" = "login1.wotblitz.eu"
-    # "WOT_Blitz_EU_3" = "login2.wotblitz.eu"
-    # "WOT_Blitz_EU_4" = "login3.wotblitz.eu"
-    # "WOT_Blitz_EU_5" = "login4.wotblitz.eu"
+# Initialize the server list hashtable
+$serverListHash = @{}
 
-    
+# Process servers from the -serverList parameter
+if ($serverList) {
+    foreach ($server in $serverList) {
+        # Trim any whitespace and ensure the server address is valid
+        $trimmedServer = $server.Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmedServer)) {
+            Write-Warning "Encountered an empty server entry in -serverList parameter. Skipping."
+            continue
+        }
+
+        # Use the server address as both name and address
+        $serverListHash[$trimmedServer] = $trimmedServer
+    }
+}
+
+# Process servers from the -serverListFile parameter
+if ($serverListFile) {
+    if (-Not (Test-Path -Path $serverListFile)) {
+        Write-Error "The server list file '$serverListFile' does not exist."
+        exit 1
+    }
+
+    try {
+        # Read and parse the JSON file
+        $jsonContent = Get-Content -Path $serverListFile -Raw | ConvertFrom-Json
+
+        if (-Not $jsonContent.servers) {
+            Write-Error "The JSON file '$serverListFile' does not contain a 'servers' array."
+            exit 1
+        }
+
+        foreach ($server in $jsonContent.servers) {
+            if (-Not $server.name -or -Not $server.url) {
+                Write-Warning "A server entry in '$serverListFile' is missing 'name' or 'url'. Skipping."
+                continue
+            }
+
+            # Check for duplicate names
+            if ($serverListHash.ContainsKey($server.name)) {
+                Write-Warning "Duplicate server name '$($server.name)' found. Overwriting the existing entry."
+            }
+
+            $serverListHash[$server.name] = $server.url
+        }
+    }
+    catch {
+        Write-Error "Failed to read or parse the JSON file '$serverListFile'. Error: $_"
+        exit 1
+    }
+}
+
+# Ensure that at least one server is provided
+if ($serverListHash.Count -eq 0) {
+    Write-Error "No servers provided. Please specify at least one server using -serverList or -serverListFile."
+    exit 1
 }
 
 # Initialize an array to hold the results
@@ -53,9 +98,9 @@ $counter = 1
 # create hashtable for keep dnsDispersion
 $serverDispersion = @{}
 $serverAveragePing = @{}
-foreach ($server in $serverList.GetEnumerator()) {
+foreach ($server in $serverListHash.GetEnumerator()) {
     # Calculate the total number of DNS records
-    $totalRecords = $serverList.Count
+    $totalRecords = $serverListHash.Count
     # Display the current number of $server
     Write-Host "Processing $($counter) of $totalRecords" -ForegroundColor Green
     Write-Host "Host $($server.Value)" -ForegroundColor Yellow
