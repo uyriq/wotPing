@@ -29,15 +29,50 @@
     .\wotPing.ps1 -serverListFile "serverList.json"
     # Pings all servers listed in "serverList.json" four times each (default ping count).
 
+.INPUTS
+    [int]$pingCount
+        The number of ping attempts to perform for each server. If not specified, defaults to 4.
+
+    [string[]]$serverList
+        An array of server URLs to ping. Each URL is treated as both the name and address of the server.
+
+    [string]$serverListFile
+        The path to a JSON file containing server details. The JSON file should have a structure like:
+        {
+          "servers": [
+            { "name": "Server1", "url": "server1.example.com" },
+            { "name": "Server2", "url": "server2.example.com" }
+          ]
+        }
+
+    [switch]$Help
+        When specified, displays the full help message for the script.
+
+.OUTPUTS
+    System.Management.Automation.PSCustomObject[]
+        The script outputs an array of custom objects containing the following properties for each server:
+        - Host Cluster Name: The name of the server cluster.
+        - IP Address: The IP address of the server.
+        - Ping Result: "Success" or "Failure" based on the ping outcome.
+        - Average Time: The average response time in milliseconds.
+        - Average Dispersion: The latency dispersion in milliseconds.    
+
 .NOTES
     Author: Uyriq
-    Date: June 2024, Dec 2024
+    Date: June, Dec 2024
 #>
 param(
-    [switch]$Help,
+    [Parameter(Position = 0)]
+    [ValidateRange(1, 100)]
     [int]$pingCount = 4,
+    
+    [Parameter(Position = 1)]
     [string[]]$serverList,
-    [string]$serverListFile
+    
+    [Parameter(Position = 2)]
+    [string]$serverListFile,
+    
+    [switch]$Help
 )
 
 # Display help and exit if -Help is provided

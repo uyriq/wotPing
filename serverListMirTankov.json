@@ -1,11 +1,10 @@
 {
   "servers": [
-    { "name": "Yandex", "url": "ya.ru" },
     { "name": "LESTA_RU-1", "url": "login.p1.tanki.su" },
     { "name": "LESTA_RU-2", "url": "login.p2.tanki.su" },
     { "name": "LESTA_RU-4", "url": "login.p4.tanki.su" },
     { "name": "LESTA_RU-6", "url": "login.p6.tanki.su" },
-    { "name": "LESTA_RU-7", "url": "login.p7.tanki.su" },
+
     { "name": "LESTA_RU-8", "url": "login.p8.tanki.su" },
     { "name": "LESTA_RU-9", "url": "login.p9.tanki.su" }
   ]
