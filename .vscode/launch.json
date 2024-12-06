@@ -1,0 +1,21 @@
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/cs/WotPing/bin/Debug/net9.0/WotPing.dll",
+            "args": [
+                "--ping-count", "4",
+               "--server-list", "ya.ru,google.com",
+                "--server-list-file", "${workspaceFolder}/cs/WotPing/serverListMirTankov.json"
+            ],
+            "cwd": "${workspaceFolder}/cs/WotPing",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        }
+    ]
+}
