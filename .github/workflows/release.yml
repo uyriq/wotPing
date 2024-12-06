@@ -47,18 +47,28 @@ jobs:
       - name: Publish
         run: dotnet publish cs/WotPing -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
 
+      - name: Rename Binary
+        run: |
+          mkdir artifacts
+          copy cs\WotPing\bin\Release\net9.0\win-x64\publish\WotPing.exe artifacts\WotPing-${{ github.ref_name }}-win-x64.exe
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # This token is provided automatically
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            cs/WotPing/bin/Release/net9.0/win-x64/publish/WotPing.exe
+            artifacts/WotPing-${{ github.ref_name }}-win-x64.exe
           name: Release ${{ github.ref_name }}
           body: |
             ## WotPing Release ${{ github.ref_name }}
 
-            Changes in this release:
+            ### Binary Information
+            - Platform: Windows
+            - Architecture: x64
+            - Self-contained: Yes
+
+            ### Changes in this release:
             - Automated release from tag ${{ github.ref_name }}
           draft: false
           prerelease: false
