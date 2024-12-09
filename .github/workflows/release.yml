@@ -47,10 +47,13 @@ jobs:
       - name: Publish
         run: dotnet publish cs/WotPing -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
 
-      - name: Rename Binary
+      - name: Prepare Release Assets
         run: |
           mkdir artifacts
-          copy cs\WotPing\bin\Release\net9.0\win-x64\publish\WotPing.exe artifacts\WotPing-${{ github.ref_name }}-win-x64.exe
+          copy cs\WotPing\bin\Release\net9.0\win-x64\publish\WotPing.exe artifacts\WotPing.exe
+          copy cs\WotPing\serverListMirTankov.json artifacts\serverListMirTankov.json
+          $hash = (Get-FileHash -Algorithm SHA256 artifacts\WotPing.exe).Hash
+          $hash | Out-File -FilePath artifacts\WotPing.exe.sha256
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -58,19 +61,28 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            artifacts/WotPing-${{ github.ref_name }}-win-x64.exe
+            artifacts/WotPing.exe
+            artifacts/WotPing.exe.sha256
           name: Release ${{ github.ref_name }}
           body: |
             ## WotPing Release ${{ github.ref_name }}
 
             ### Binary Information
+            - Version: ${{ github.ref_name }}
             - Platform: Windows
             - Architecture: x64
             - Self-contained: Yes
+            - SHA256: ${{ steps.prepare.outputs.hash }}
+
+            ### Package Contents
+            - WotPing.exe - Main executable
+            - serverListMirTankov.json - Example of server list in json format
+            - WotPing.exe.sha256 - SHA256 hash file
 
             ### Changes in this release:
             - Automated release from tag ${{ github.ref_name }}
           draft: false
           prerelease: false
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
