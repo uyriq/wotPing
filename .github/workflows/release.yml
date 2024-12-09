@@ -54,6 +54,25 @@ jobs:
           copy cs\WotPing\serverListMirTankov.json artifacts\serverListMirTankov.json
           $hash = (Get-FileHash -Algorithm SHA256 artifacts\WotPing.exe).Hash
           $hash | Out-File -FilePath artifacts\WotPing.exe.sha256
+      - name: Update Latest Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            artifacts/WotPing.exe
+            artifacts/WotPing.exe.sha256
+            artifacts/serverListMirTankov.json
+          name: Latest Release
+          tag_name: latest
+          body: |
+            ## Latest WotPing Release
+            This is always updated to the latest release version.
+
+            Current version: ${{ github.ref_name }}
+
+            For versioned downloads, see: https://github.com/uyriq/wotPing/releases/tag/${{ github.ref_name }}
+          update_existing: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
