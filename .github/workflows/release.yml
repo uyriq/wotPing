@@ -48,6 +48,7 @@ jobs:
         run: dotnet publish cs/WotPing -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
 
       - name: Prepare Release Assets
+        id: prepare_release
         run: |
           mkdir artifacts
           copy cs\WotPing\bin\Release\net9.0\win-x64\publish\WotPing.exe artifacts\WotPing.exe
@@ -96,7 +97,7 @@ jobs:
             - Platform: Windows
             - Architecture: x64
             - Self-contained: Yes
-            - SHA256: ${{ steps.prepare.outputs.hash }}
+            - SHA256: ${{ steps.prepare_release.outputs.hash }}
 
             ### Package Contents
             - WotPing.exe - Main executable
