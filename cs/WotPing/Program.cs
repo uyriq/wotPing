@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Net;  // this for Dns
-using System.Net.NetworkInformation;
-using System.Text.Json;
-using System.Linq;
+﻿// <copyright file="Program.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace WotPing
 {
+    using System;
+    using System.Collections.Generic;
+    using System.CommandLine;
+    using System.IO;
+    using System.Linq;
+    using System.Net;  // for Dns
+    using System.Net.NetworkInformation;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     public class ServerEntry
     {
         public required string Name { get; set; }
+
         public required string Url { get; set; }
     }
 
@@ -22,15 +29,30 @@ namespace WotPing
     public class PingResult
     {
         public required string HostClusterName { get; set; }
+
         public required string IpAddress { get; set; }
+
         public required string Status { get; set; }
+
         public double? AverageTime { get; set; }
+
         public double? AverageDispersion { get; set; }
     }
 
-    class Program
+    /// <summary>
+    /// Performs ping tests on a customizable list of servers.
+    /// </summary>
+    internal class Program
     {
-        static async Task<int> Main(string[] args)
+        // Reuse JsonSerializerOptions
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
+        private static async Task<int> Main(string[] args)
         {
             var rootCommand = new RootCommand("Server Name Resolving Ping Utility");
 
@@ -41,7 +63,7 @@ namespace WotPing
 
             var serverListOption = new Option<string[]>(
                 "--server-list",
-                    parseArgument: result =>
+                parseArgument: result =>
                     {
                         var values = result.Tokens
                             .Select(t => t.Value)
@@ -56,24 +78,124 @@ namespace WotPing
                 "--server-list-file",
                 description: "JSON file containing server list");
 
-            rootCommand.AddOption(pingCountOption);
-            rootCommand.AddOption(serverListOption);
-            rootCommand.AddOption(serverListFileOption);
+            // Flag option for initialization
+            var initOption = new Option<bool>(
+                "--init",
+                description: "Initialize JSON files in the specified folder");
 
-            rootCommand.SetHandler(async (pingCount, servers, serverFile) =>
+            // Separate path option
+            var pathOption = new Option<string>(
+                "--path",
+                getDefaultValue: () => Directory.GetCurrentDirectory(),
+                description: "Target folder for JSON files (defaults to current directory)");
+
+            var options = new List<Option>
+                {
+                    pingCountOption,
+                    serverListOption,
+                    serverListFileOption,
+                    initOption,
+                    pathOption,
+                };
+            options.ForEach(rootCommand.AddOption);
+
+            rootCommand.SetHandler(
+                async (pingCount, servers, serverFile, init, path) =>
             {
+                if (init)
+                {
+                    await InitializeJsonFiles(path);
+                    return; // if --init option, so we stop after creating example files
+                }
+
                 await RunPingTests(pingCount, servers ?? Array.Empty<string>(), serverFile);
             },
-            pingCountOption, serverListOption, serverListFileOption);
+                pingCountOption, serverListOption, serverListFileOption, initOption, pathOption);
 
             return await rootCommand.InvokeAsync(args);
         }
 
-        static async Task RunPingTests(int pingCount, string[] serverList, FileInfo serverListFile)
+        private static async Task InitializeJsonFiles(string folderPath)
+        {
+            Console.WriteLine($"Initializing JSON files in: {folderPath}");
+
+            var lestaMirServers = new ServerList
+            {
+                Servers = new List<ServerEntry>
+        {
+            new () { Name = "LESTA_RU-1", Url = "login.p1.tanki.su" },
+            new () { Name = "LESTA_RU-2", Url = "login.p2.tanki.su" },
+            new () { Name = "LESTA_RU-4", Url = "login.p4.tanki.su" },
+            new () { Name = "LESTA_RU-6", Url = "login.p6.tanki.su" },
+            new () { Name = "LESTA_RU-8", Url = "login.p8.tanki.su" },
+            new () { Name = "LESTA_RU-9", Url = "login.p9.tanki.su" },
+        },
+            };
+
+            var wotServers = new ServerList
+            {
+                Servers = new List<ServerEntry>
+        {
+            new () { Name = "WOT_EU1", Url = "login.p1.worldoftanks.eu" },
+            new () { Name = "WOT_EU2", Url = "login.p2.worldoftanks.eu" },
+            new () { Name = "WOT_EU3", Url = "login.p3.worldoftanks.eu" },
+
+            new () { Name = "WOT_North_America_Central", Url = "wotna3.login.wargaming.net" },
+            new () { Name = "WOT_South_America_Brazil", Url = "wotna4.login.wargaming.net" },
+        },
+            };
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+
+            try
+            {
+                var mirPath = Path.Combine(folderPath, "serverListMirTankov.json");
+                var wotPath = Path.Combine(folderPath, "serverListWoT.json");
+
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                    Console.WriteLine($"Created directory: {folderPath}");
+                }
+
+                if (!File.Exists(mirPath))
+                {
+                    await File.WriteAllTextAsync(mirPath, JsonSerializer.Serialize(lestaMirServers, options));
+                    Console.WriteLine($"Created: {mirPath}");
+                }
+                else
+                {
+                    Console.WriteLine($"File already exists: {mirPath}");
+                }
+
+                if (!File.Exists(wotPath))
+                {
+                    await File.WriteAllTextAsync(wotPath, JsonSerializer.Serialize(wotServers, options));
+                    Console.WriteLine($"Created: {wotPath}");
+                }
+                else
+                {
+                    Console.WriteLine($"File already exists: {wotPath}");
+                }
+
+                Console.WriteLine("JSON files initialization completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error initializing JSON files: {ex.Message}");
+                Console.ResetColor();
+                throw;
+            }
+        }
+
+        private static async Task RunPingTests(int pingCount, string[] serverList, FileInfo serverListFile)
         {
             var serverDict = new Dictionary<string, string>();
             Console.WriteLine("Initializing ping tests...");
-
 
             // Process direct server list first
             if (serverList?.Length > 0)
@@ -90,8 +212,7 @@ namespace WotPing
                 }
             }
 
-
-            // Try to process serverListFile if provided    
+            // Try to process serverListFile if provided
             // Process JSON file
             if (serverListFile != null && File.Exists(serverListFile.FullName))
             {
@@ -101,12 +222,12 @@ namespace WotPing
                 try
                 {
                     var jsonContent = await File.ReadAllTextAsync(serverListFile.FullName);
-                    //  Console.WriteLine($"Read JSON content: {jsonContent}"); // Debug log
 
+                    // Console.WriteLine($"Read JSON content: {jsonContent}"); // Debug log
                     var options = new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true,
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                     };
 
                     var servers = JsonSerializer.Deserialize<ServerList>(jsonContent, options);
@@ -120,6 +241,7 @@ namespace WotPing
                                 serverDict[server.Name] = server.Url;
                             }
                         }
+
                         Console.WriteLine($"Added {servers.Servers.Count} servers from JSON file");
                     }
                     else
@@ -143,6 +265,7 @@ namespace WotPing
                 Console.ResetColor();
                 return;
             }
+
             Console.WriteLine($"\nStarting ping tests for {serverDict.Count} servers, {pingCount} pings each");
             Console.WriteLine(new string('-', 80));
             var results = new List<PingResult>();
@@ -188,7 +311,7 @@ namespace WotPing
                                 IpAddress = ip.ToString(),
                                 Status = "Success",
                                 AverageTime = avgTime,
-                                AverageDispersion = dispersion
+                                AverageDispersion = dispersion,
                             });
                         }
                         else
@@ -197,7 +320,7 @@ namespace WotPing
                             {
                                 HostClusterName = name,
                                 IpAddress = ip.ToString(),
-                                Status = "Failure"
+                                Status = "Failure",
                             });
                         }
                     }
@@ -214,13 +337,15 @@ namespace WotPing
                 .OrderBy(r => r.AverageTime);
 
             Console.WriteLine("\nResults:");
-            Console.WriteLine("{0,-20} {1,-15} {2,-10} {3,-15} {4,-15}",
+            Console.WriteLine(
+                "{0,-20} {1,-15} {2,-10} {3,-15} {4,-15}",
                 "Host", "IP", "Result", "Avg Time", "Dispersion");
             Console.WriteLine(new string('-', 75));
 
             foreach (var result in successfulResults)
             {
-                Console.WriteLine("{0,-20} {1,-15} {2,-10} {3,-15:F2} {4,-15:F2}",
+                Console.WriteLine(
+                    "{0,-20} {1,-15} {2,-10} {3,-15:F2} {4,-15:F2}",
                     result.HostClusterName,
                     result.IpAddress,
                     result.Status,

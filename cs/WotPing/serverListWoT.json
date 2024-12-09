@@ -1,0 +1,36 @@
+{
+  "Servers": [
+    {
+      "Name": "WOT_EU1",
+      "Url": "login.p1.worldoftanks.eu"
+    },
+    {
+      "Name": "WOT_EU2",
+      "Url": "login.p2.worldoftanks.eu"
+    },
+    {
+      "Name": "WOT_EU3",
+      "Url": "login.p3.worldoftanks.eu"
+    },
+    {
+      "Name": "WOT_North_America_Chicago",
+      "Url": "wotna1.login.wargaming.net"
+    },
+    {
+      "Name": "WOT_North_America_Central",
+      "Url": "wotna3.login.wargaming.net"
+    },
+    {
+      "Name": "WOT_South_America_Brazil",
+      "Url": "wotna4.login.wargaming.net"
+    },
+    {
+      "Name": "WOT_ASIA_China",
+      "Url": "wotasia2.login.wargaming.net"
+    },
+    {
+      "Name": "WOT_ASIA_Australia",
+      "Url": "wotasia3.login.wargaming.net"
+    }
+  ]
+}

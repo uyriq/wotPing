@@ -71,6 +71,11 @@ jobs:
 
             Current version: ${{ github.ref_name }}
 
+            ### Package Contents
+            - WotPing.exe - Main executable
+            - serverListMirTankov.json - Example of server list in json format
+            - WotPing.exe.sha256 - SHA256 hash file
+
             For versioned downloads, see: https://github.com/uyriq/wotPing/releases/tag/${{ github.ref_name }}
           update_existing: true
 

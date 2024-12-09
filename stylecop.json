@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "documentationRules": {
+      "companyName": "Uyriq",
+      "copyrightText": "© 2024 Uyriq",
+      "fileHeader": [
+        "// <copyright file=\"{filename}\" company=\"Uyriq\">",
+        "// © 2024 Uyriq. All rights reserved.",
+        "// </copyright>",
+        "",
+        "<summary>",
+        "Performs ping tests on a customizable list of servers.",
+        "</summary>"
+      ],
+      "fileNamingConvention": "camelCase",
+      "documentInterfaces": false,
+      "documentExposedElements": true,
+      "documentInternalElements": false,
+      "documentPrivateElements": false,
+      "documentPrivateFields": false
+    },
+    "orderingRules": {
+      "systemUsingDirectivesFirst": true,
+      "usingDirectivesPlacement": "outsideNamespace",
+      "elementOrder": ["kind", "accessibility", "modifiers", "type", "name"]
+    },
+    "layoutRules": {
+      "newlineAtEndOfFile": "require"
+    },
+    "readabilityRules": {
+      "variableNamesMustBeCasedCorrectly": true,
+      "allowBuiltInTypeAlias": true
+    },
+    "maintainabilityRules": {
+      "maxLineLength": 120
+    }
+  }
+}

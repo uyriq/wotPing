@@ -1,11 +1,28 @@
 {
-  "servers": [
-    { "name": "LESTA_RU-1", "url": "login.p1.tanki.su" },
-    { "name": "LESTA_RU-2", "url": "login.p2.tanki.su" },
-    { "name": "LESTA_RU-4", "url": "login.p4.tanki.su" },
-    { "name": "LESTA_RU-6", "url": "login.p6.tanki.su" },
-
-    { "name": "LESTA_RU-8", "url": "login.p8.tanki.su" },
-    { "name": "LESTA_RU-9", "url": "login.p9.tanki.su" }
+  "Servers": [
+    {
+      "Name": "LESTA_RU-1",
+      "Url": "login.p1.tanki.su"
+    },
+    {
+      "Name": "LESTA_RU-2",
+      "Url": "login.p2.tanki.su"
+    },
+    {
+      "Name": "LESTA_RU-4",
+      "Url": "login.p4.tanki.su"
+    },
+    {
+      "Name": "LESTA_RU-6",
+      "Url": "login.p6.tanki.su"
+    },
+    {
+      "Name": "LESTA_RU-8",
+      "Url": "login.p8.tanki.su"
+    },
+    {
+      "Name": "LESTA_RU-9",
+      "Url": "login.p9.tanki.su"
+    }
   ]
 }
